@@ -7,7 +7,6 @@ import com.jennifer.model.Url;
 import com.jennifer.repository.UrlRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -15,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+
 
 @Service
 public class UrlServiceImpl implements UrlService {
@@ -48,15 +48,13 @@ public class UrlServiceImpl implements UrlService {
                 return null;
             }
         }
-
-
         return null;
     }
 
     private String encodeUrl(String url) {
         String encodedUrl;
         LocalDateTime time = LocalDateTime.now();
-        encodedUrl = Hashing.sha256().hashString(url.concat(time.toString()), StandardCharsets.UTF_8).toString();
+        encodedUrl = Hashing.murmur3_32_fixed().hashString(url.concat(time.toString()), StandardCharsets.UTF_8).toString();
         return encodedUrl;
 
 
@@ -73,6 +71,16 @@ public class UrlServiceImpl implements UrlService {
                 System.err.println("Invalid expiration date format: " + expiresAt);
                 return LocalDateTime.now().plusMinutes(5);
             }
+        }
+    }
+
+
+
+    @Override
+    public void deleteExpiredUrl() {
+        List<Url> urls = urlRepository.findByExpiresAtBefore(LocalDateTime.now());
+        for (Url url : urls) {
+            urlRepository.delete(url);
         }
     }
 

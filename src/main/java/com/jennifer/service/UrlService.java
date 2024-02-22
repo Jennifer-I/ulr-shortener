@@ -12,6 +12,10 @@ import java.io.IOException;
 public interface UrlService {
     UrlResponseDto generateShortLink(UrlRequestDto requestDto);
 
+
+
+    void deleteExpiredUrl();
+
     Url getEncodedUrl(String shortLink);
 
     boolean isValidUrl(String shortLink);
